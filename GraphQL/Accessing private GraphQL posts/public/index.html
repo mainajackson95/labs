@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Security Lab - Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .lab-info {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 1.5rem;
+            margin: 2rem;
+            border-radius: 15px;
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .lab-info h3 {
+            color: #d63031;
+            margin-bottom: 0.5rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .blog-posts {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-post {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .blog-post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .blog-post h3 {
+            color: #2d3436;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .blog-post .meta {
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .blog-post .content-text {
+            color: #2d3436;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #636e72;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .submit-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+
+        .modal-header h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin: 1rem 0;
+            transition: border-color 0.3s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #ddd;
+            color: #666;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .success-modal .modal-header {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+
+        .error-modal .modal-header {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+        }
+
+        .celebration {
+            font-size: 3rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .hint {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ GraphQL Security Lab</h1>
+            <p>Practice GraphQL vulnerability testing in a safe environment</p>
+        </div>
+
+        <div class="lab-info">
+            <h3>🎯 Lab Objective</h3>
+            <p><strong>Accessing Private GraphQL Post:</strong> Find the hidden blog post with ID 3 and discover its secret password. Use introspection and IDOR techniques to solve this challenge.</p>
+        </div>
+
+        <div class="content">
+            <h2>📚 Corporate Blog</h2>
+            <div class="hint">
+                <strong>💡 Hint:</strong> Notice that blog post ID 3 is missing from the list below. Try using GraphQL introspection and direct object access to find it!
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading blog posts...</p>
+            </div>
+
+            <div id="blog-posts" class="blog-posts" style="display: none;"></div>
+
+            <div class="submit-section">
+                <h3>🏆 Submit Your Solution</h3>
+                <p>Found the hidden blog post and its password? Submit it here!</p>
+                <button id="submit-btn" class="submit-btn">Submit Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Input Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 Enter the Secret Password</h2>
+                <p>Found in the hidden blog post</p>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="password-input" class="password-input" placeholder="Enter the secret password..." />
+                <div class="modal-buttons">
+                    <button id="verify-btn" class="modal-btn primary">Verify Password</button>
+                    <button id="cancel-btn" class="modal-btn secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal success-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="celebration">🎉</div>
+                <h2>Congratulations!</h2>
+                <p>Lab Completed Successfully!</p>
+            </div>
+            <div class="modal-body">
+                <p><strong>Well done!</strong> You have successfully exploited the GraphQL vulnerability and found the hidden blog post password.</p>
+                <p style="margin-top: 1rem; color: #666;">You demonstrated understanding of:</p>
+                <ul style="text-align: left; margin: 1rem 0; color: #666;">
+                    <li>GraphQL introspection queries</li>
+                    <li>Insecure Direct Object Reference (IDOR)</li>
+                    <li>GraphQL schema exploration</li>
+                </ul>
+                <div class="modal-buttons">
+                    <button id="success-close" class="modal-btn primary">Awesome!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal error-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❌ Incorrect Password</h2>
+                <p>Try again!</p>
+            </div>
+            <div class="modal-body">
+                <p>The password you entered is incorrect. Make sure you've found the hidden blog post and extracted the correct password.</p>
+                <div class="modal-buttons">
+                    <button id="error-close" class="modal-btn primary">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GraphQL query to fetch blog posts
+        async function fetchBlogPosts() {
+            const query = `
+                query {
+                    blogPosts {
+                        id
+                        title
+                        content
+                        author
+                        published
+                    }
+                }
+            `;
+
+            try {
+                const response = await fetch('/graphql/v1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                return data.data.blogPosts;
+            } catch (error) {
+                console.error('Error fetching blog posts:', error);
+                return [];
+            }
+        }
+
+        // Render blog posts
+        function renderBlogPosts(posts) {
+            const container = document.getElementById('blog-posts');
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'blog-post';
+                postElement.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <div class="meta">By ${post.author} | ID: ${post.id} | Published: ${post.published ? 'Yes' : 'No'}</div>
+                    <div class="content-text">${post.content}</div>
+                `;
+                container.appendChild(postElement);
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Password verification
+        async function verifyPassword(password) {
+            try {
+                const response = await fetch('/api/verify-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error verifying password:', error);
+                return { success: false, message: 'Network error' };
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', async () => {
+            const posts = await fetchBlogPosts();
+            renderBlogPosts(posts);
+
+            // Submit button
+            document.getElementById('submit-btn').addEventListener('click', () => {
+                showModal('password-modal');
+                document.getElementById('password-input').focus();
+            });
+
+            // Cancel button
+            document.getElementById('cancel-btn').addEventListener('click', () => {
+                hideModal('password-modal');
+                document.getElementById('password-input').value = '';
+            });
+
+            // Verify button
+            document.getElementById('verify-btn').addEventListener('click', async () => {
+                const password = document.getElementById('password-input').value;
+                if (!password) return;
+
+                const result = await verifyPassword(password);
+                hideModal('password-modal');
+                document.getElementById('password-input').value = '';
+
+                if (result.success) {
+                    showModal('success-modal');
+                } else {
+                    showModal('error-modal');
+                }
+            });
+
+            // Enter key support
+            document.getElementById('password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('verify-btn').click();
+                }
+            });
+
+            // Close success modal
+            document.getElementById('success-close').addEventListener('click', () => {
+                hideModal('success-modal');
+            });
+
+            // Close error modal
+            document.getElementById('error-close').addEventListener('click', () => {
+                hideModal('error-modal');
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                    document.getElementById('password-input').value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!-- public/success.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lab Solved</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0d1117, #161b22);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      overflow: hidden;
+      color: #c9d1d9;
+    }
+    
+    .success-card {
+      background: #0d1117;
+      padding: 50px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(46, 204, 64, 0.3);
+      max-width: 700px;
+      position: relative;
+      z-index: 10;
+      border: 1px solid #30363d;
+      animation: appear 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-origin: center;
+      overflow: hidden;
+    }
+    
+    .success-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(46, 204, 64, 0.1) 0%, transparent 70%);
+      z-index: -1;
+    }
+    
+    @keyframes appear {
+      0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+      }
+      100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+    
+    .success-icon {
+      font-size: 120px;
+      color: #2ECC40;
+      margin-bottom: 30px;
+      animation: iconPulse 2s infinite;
+    }
+    
+    @keyframes iconPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    h1 {
+      color: #2ECC40;
+      font-size: 48px;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    
+    .subtitle {
+      font-size: 28px;
+      margin-bottom: 40px;
+      color: #8b949e;
+      font-weight: 300;
+    }
+    
+    .lab-info {
+      background: rgba(46, 204, 64, 0.1);
+      border: 1px solid rgba(46, 204, 64, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 30px 0;
+      text-align: center;
+    }
+    
+    .lab-name {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2ECC40;
+      margin-bottom: 10px;
+    }
+    
+    .lab-desc {
+      font-size: 18px;
+      color: #8b949e;
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+      color: white;
+      border: none;
+      padding: 16px 50px;
+      font-size: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+      transform: rotate(30deg);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .btn:hover::after {
+      opacity: 1;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      animation: fall 5s linear infinite;
+      z-index: 1;
+      border-radius: 50%;
+    }
+    
+    @keyframes fall {
+      0% { 
+        transform: translateY(-100vh) rotate(0deg) scale(0.5); 
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(100vh) rotate(360deg) scale(1.2); 
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h1>CONGRATULATIONS!</h1>
+    <p class="subtitle">You've successfully solved the lab</p>
+    
+    <div class="lab-info">
+      <div class="lab-name">Accidental exposure of private GraphQL fields</div>
+      <div class="lab-desc">Identified and exploited insecure GraphQL implementation</div>
+    </div>
+    
+    <button class="btn" onclick="location.href='/'">BACK TO LAB</button>
+  </div>
+  
+  <script>
+    // Generate confetti
+    const colors = ['#FFD700', '#FF4136', '#2ECC40', '#0074D9', '#B10DC9'];
+    for (let i = 0; i < 250; i++) {
+      setTimeout(() => {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDelay = Math.random() * 5 + 's';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 20 + 10 + 'px';
+        confetti.style.height = confetti.style.width;
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        document.body.appendChild(confetti);
+        
+        // Remove confetti after animation
+        setTimeout(() => confetti.remove(), 5000);
+      }, i * 20);
+    }
+  </script>
+</body>
+</html>
